@@ -12,6 +12,9 @@ if err != nil {
   log.Fatalf("bla %v, %v", x, err)
 }
 gutil.FatalIf("bla %v, %v", x, err)
+
+if one of the parameters after the format string is of type error (implicitly not nil)
+log.Fatal will be called
 */
 
 func FatalIf(message string, values ...interface{}) {
@@ -87,6 +90,14 @@ func (ec *ErrorCollector) All() error {
 		return ec
 	}
 	return nil
+}
+
+func (ec *ErrorCollector) StringList() []string {
+	errs := []string{}
+	for _, err := range ec.errors {
+		errs = append(errs, err.Error())
+	}
+	return errs
 }
 
 func (ec *ErrorCollector) Error() string {

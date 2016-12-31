@@ -14,7 +14,6 @@ func nilError() error {
 }
 
 func TestFatalIf(t *testing.T) {
-
 	testCases := []struct {
 		name    string
 		message string
@@ -47,6 +46,7 @@ func TestFatalIf(t *testing.T) {
 		},
 	}
 
+	// check if it is executed by itself, if yes, run specified test case
 	subCall := os.Getenv("TEST_FATAL_IF")
 	if subCall != "" {
 		i, _ := strconv.Atoi(subCall)
@@ -59,6 +59,7 @@ func TestFatalIf(t *testing.T) {
 		testCase := testCase
 
 		t.Run(testCase.name, func(t *testing.T) {
+			// run test again with env var set to identify test case
 			cmd := exec.Command(os.Args[0], "-test.run=TestFatalIf")
 			cmd.Env = append(os.Environ(), fmt.Sprintf("TEST_FATAL_IF=%v", index))
 			err := cmd.Run()
@@ -74,7 +75,6 @@ func TestFatalIf(t *testing.T) {
 				}
 			}
 		})
-
 	}
 }
 
