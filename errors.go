@@ -61,10 +61,12 @@ func NewErrorCollector() *ErrorCollector {
 	return &ErrorCollector{}
 }
 
-func (ec *ErrorCollector) Add(err error) {
+func (ec *ErrorCollector) Add(err error) bool {
 	if err != nil {
 		ec.errors = append(ec.errors, err)
+		return true
 	}
+	return false
 }
 
 func (ec *ErrorCollector) Has() bool {
