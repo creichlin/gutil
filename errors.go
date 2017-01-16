@@ -102,6 +102,17 @@ func (ec *ErrorCollector) StringList() []string {
 	return errs
 }
 
+func (ec *ErrorCollector) Merge(a, b *ErrorCollector) *ErrorCollector {
+	m := NewErrorCollector()
+	for _, err := range a.errors {
+		m.errors = append(m.errors, err)
+	}
+	for _, err := range b.errors {
+		m.errors = append(m.errors, err)
+	}
+	return m
+}
+
 func (ec *ErrorCollector) Error() string {
 	msg := ""
 	for _, err := range ec.errors {
