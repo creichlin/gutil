@@ -94,6 +94,13 @@ func (ec *ErrorCollector) All() error {
 	return nil
 }
 
+func (ec *ErrorCollector) ThisOrNil() *ErrorCollector {
+	if ec.Has() {
+		return ec
+	}
+	return nil
+}
+
 func (ec *ErrorCollector) StringList() []string {
 	errs := []string{}
 	for _, err := range ec.errors {
@@ -117,6 +124,9 @@ func (ec *ErrorCollector) Error() string {
 	msg := ""
 	for _, err := range ec.errors {
 		msg += err.Error() + "\n"
+	}
+	if len(msg) == 0 {
+		return "Empty error, check for errors on gutil.ErrorCollector using errors.Has() or errors.All() not err != nil"
 	}
 	return msg[:len(msg)-1]
 }
