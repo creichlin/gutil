@@ -2,12 +2,14 @@ package run
 
 import (
 	"github.com/rjeczalik/notify"
+	"log"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
 // Provides an easy way to run code triggered by changes on the
 // filesystem
-
 type FileTriggerRunner struct {
 	folder string
 	action Action
@@ -16,6 +18,9 @@ type FileTriggerRunner struct {
 
 type Action func() error
 
+// NewFileTriggerRunner constructor needs a path as first argument with
+// no trailing slash.
+// files in the given directory-root, starting with a . are ignored
 func NewFileTriggerRunner(folder string, action Action) *FileTriggerRunner {
 	return &FileTriggerRunner{
 		folder: folder,
@@ -25,16 +30,40 @@ func NewFileTriggerRunner(folder string, action Action) *FileTriggerRunner {
 }
 
 func (ftr *FileTriggerRunner) Start() error {
-	if err := notify.Watch(ftr.folder, ftr.events, notify.All); err != nil {
+	absFolder, err := filepath.Abs(ftr.folder)
+	if err != nil {
 		return err
 	}
+
+	log.Printf("Folder to watch is %v", absFolder)
+
+	err = notify.Watch(absFolder+"/...", ftr.events, notify.All)
+	if err != nil {
+		return err
+	}
+
 	defer notify.Stop(ftr.events)
 
 	// run it once initially
-	if err := ftr.action(); err != nil {
+	err = ftr.action()
+	if err != nil {
 		return err
 	}
-	for range ftr.events {
+
+eventLoop:
+	for ev := range ftr.events {
+		relPath, err := filepath.Rel(absFolder, ev.Path())
+		if err != nil {
+			return err
+		}
+
+		for _, relItem := range strings.Split(relPath, string(filepath.Separator)) {
+			if strings.HasPrefix(relItem, ".") {
+				continue eventLoop
+			}
+		}
+
+		log.Printf("Filewatcher triggered by %v", relPath)
 		// file-changes come in batches, as to not run it for every event once
 		// we first wait
 		time.Sleep(time.Millisecond * 100)
