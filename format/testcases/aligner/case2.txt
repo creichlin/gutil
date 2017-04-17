@@ -1,0 +1,33 @@
+ QqqqqqqQQq :
+Aaaa :   dfdf
+B : f
+C: dff
+
+FFF
+
+QQQQQQQ:
+:p
+##########################
+# aligned                #
+##########################
+ QqqqqqqQQq :
+Aaaa        :   dfdf
+B           : f
+C           : dff
+
+FFF
+
+QQQQQQQ     :
+            :p
+##########################
+# indented block aligned #
+##########################
+ QqqqqqqQQq :
+Aaaa   :   dfdf
+B      : f
+C      : dff
+
+FFF
+
+QQQQQQQ:
+       :p

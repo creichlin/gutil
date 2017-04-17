@@ -29,7 +29,7 @@ func WriteFileAtomic(filename string, data []byte, perm os.FileMode) (err error)
 	// if an error happens, try to remove the created tmpFile
 	defer func() {
 		if err != nil {
-			os.Remove(tmpFile.Name())
+			os.Remove(tmpFile.Name()) // nolint: errcheck, gas
 		}
 	}()
 

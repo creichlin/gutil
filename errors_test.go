@@ -66,11 +66,11 @@ func TestFatalIf(t *testing.T) {
 
 			if exit, isExitError := err.(*exec.ExitError); isExitError && !exit.Success() {
 				// execution exited erroneous
-				if testCase.crash == false {
+				if !testCase.crash {
 					t.Fatalf("process crashed but should have run successfull")
 				}
 			} else {
-				if testCase.crash == true {
+				if testCase.crash {
 					t.Fatalf("process ran succesful but should have crashed")
 				}
 			}
@@ -85,7 +85,7 @@ func TestErrorCollector(t *testing.T) {
 	ec.Add(errors.New("FIRST"))
 	ec.Add(fmt.Errorf("LAST"))
 
-	if ec.Has() == false {
+	if !ec.Has() {
 		t.Errorf("collector should have two errors")
 	}
 
@@ -107,7 +107,7 @@ func TestEmptyCollector(t *testing.T) {
 	ec.Add(nil)
 	ec.Add(nilError())
 
-	if ec.Has() == true {
+	if ec.Has() {
 		t.Errorf("collector should have no errors")
 	}
 

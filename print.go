@@ -6,10 +6,11 @@ import (
 	"log"
 )
 
+// PrintAsYAML prins the given object formatted as yaml to stdout
 func PrintAsYAML(obj interface{}) {
 	out, err := yaml.Marshal(obj)
 	if err != nil {
-		log.Printf("Failed to print %T as YAML, %v", err)
+		log.Printf("Failed to print %T as YAML, %v", obj, err)
 	}
-	fmt.Print(string(out))
+	fmt.Println(string(out))
 }

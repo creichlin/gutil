@@ -94,6 +94,9 @@ func (ec *ErrorCollector) All() error {
 	return nil
 }
 
+// ThisOrNil returns the instance if there are errors
+// inside, otherwise nil. This is usefull to mimik the
+// default error handling where nil means no error
 func (ec *ErrorCollector) ThisOrNil() *ErrorCollector {
 	if ec.Has() {
 		return ec
@@ -109,14 +112,13 @@ func (ec *ErrorCollector) StringList() []string {
 	return errs
 }
 
+// Merge
+// creates a new errors collector with the errors from both
+// parameters
 func Merge(a, b *ErrorCollector) *ErrorCollector {
 	m := NewErrorCollector()
-	for _, err := range a.errors {
-		m.errors = append(m.errors, err)
-	}
-	for _, err := range b.errors {
-		m.errors = append(m.errors, err)
-	}
+	m.errors = append(m.errors, a.errors...)
+	m.errors = append(m.errors, b.errors...)
 	return m
 }
 
