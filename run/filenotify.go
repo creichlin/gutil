@@ -25,6 +25,9 @@ type Action func(event, path string) error
 // NewFileTriggerRunner constructor needs a path as first argument with
 // no trailing slash.
 // files in the given directory-root, starting with a . are ignored
+// if path is a file, the parent base will be resitered and the file
+// is used to filter out events. This allow for deleting and recreating
+// the file or renaming it.
 func NewFileTriggerRunner(folder string, recursive bool, action Action) *FileTriggerRunner {
 	return &FileTriggerRunner{
 		folder:     folder,
