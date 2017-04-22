@@ -2,7 +2,7 @@ package run
 
 import (
 	"github.com/rjeczalik/notify"
-	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -15,11 +15,12 @@ type FileTriggerRunner struct {
 	absFolder  string
 	action     Action
 	recursive  bool
+	accept     map[string]bool
 	events     chan notify.EventInfo
 	stopSignal chan int
 }
 
-type Action func() error
+type Action func(event, path string) error
 
 // NewFileTriggerRunner constructor needs a path as first argument with
 // no trailing slash.
@@ -31,6 +32,7 @@ func NewFileTriggerRunner(folder string, recursive bool, action Action) *FileTri
 		recursive:  recursive,
 		events:     make(chan notify.EventInfo, 1),
 		stopSignal: make(chan int),
+		accept:     map[string]bool{},
 	}
 }
 
@@ -39,22 +41,40 @@ func (ftr *FileTriggerRunner) Start() error {
 	if err != nil {
 		return err
 	}
-	ftr.absFolder = absFolder
 
-	log.Printf("Folder to watch is %v", ftr.absFolder)
-	if ftr.recursive {
-		err = notify.Watch(ftr.absFolder+"/...", ftr.events, notify.All)
-	} else {
-		err = notify.Watch(ftr.absFolder, ftr.events, notify.All)
-	}
+	node, err := os.Stat(absFolder)
 	if err != nil {
 		return err
+	}
+
+	if node.IsDir() {
+		ftr.absFolder = absFolder
+		if ftr.recursive {
+			err = notify.Watch(ftr.absFolder+"/...", ftr.events, notify.All)
+		} else {
+			err = notify.Watch(ftr.absFolder, ftr.events, notify.All)
+		}
+		if err != nil {
+			return err
+		}
+	} else { // node is file
+		// we watch the parent folder and add the filename to the accept list
+		// this way we can rename the file and create a new one and it still triggers
+		// similar behaviour is done quite often by editors to allow atomic file writes
+		dir, file := filepath.Split(absFolder)
+		ftr.absFolder = dir
+		ftr.accept[file] = true
+
+		err = notify.Watch(ftr.absFolder, ftr.events, notify.All)
+		if err != nil {
+			return err
+		}
 	}
 
 	defer notify.Stop(ftr.events)
 
 	// run it once initially
-	err = ftr.action()
+	err = ftr.action("initial", ftr.absFolder)
 	if err != nil {
 		return err
 	}
@@ -78,14 +98,16 @@ func (ftr *FileTriggerRunner) eventIn(ev notify.EventInfo) error {
 		return err
 	}
 
-	// if one of the path parts is hidden (starts with a .) we will ignore this event
-	for _, relItem := range strings.Split(relPath, string(filepath.Separator)) {
-		if strings.HasPrefix(relItem, ".") {
+	if len(ftr.accept) > 0 {
+		if _, found := ftr.accept[relPath]; !found {
+			return nil
+		}
+	} else {
+		if dirIsHidden(relPath) {
 			return nil
 		}
 	}
 
-	log.Printf("Filewatcher triggered by %v", relPath)
 	// file-changes often come in batches, as to not run it for every event once
 	// we first wait
 	time.Sleep(time.Millisecond * 100)
@@ -95,9 +117,19 @@ func (ftr *FileTriggerRunner) eventIn(ev notify.EventInfo) error {
 	}
 	// and after the draining we run it, while new events
 	// might already be collecting
-	return ftr.action()
+	return ftr.action(ev.Event().String(), ev.Path())
 }
 
 func (ftr *FileTriggerRunner) Stop() {
 	ftr.stopSignal <- 0
+}
+
+func dirIsHidden(path string) bool {
+	// if one of the path parts is hidden (starts with a .) we will ignore this event
+	for _, relItem := range strings.Split(path, string(filepath.Separator)) {
+		if strings.HasPrefix(relItem, ".") {
+			return true
+		}
+	}
+	return false
 }

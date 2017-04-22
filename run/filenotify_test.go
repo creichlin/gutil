@@ -10,6 +10,63 @@ import (
 )
 
 // nolint: errcheck
+func TestFileTriggerRunnerOnFileRename(t *testing.T) {
+	count := 0
+	os.MkdirAll("testdata/t1", 0755)
+	defer os.RemoveAll("testdata/t1")
+
+	ioutil.WriteFile("testdata/t1/foo.txt", []byte("HELLO"), 0644)
+
+	fn := NewFileTriggerRunner("testdata/t1/foo.txt", false, func() error {
+		count++
+		return nil
+	})
+
+	go fn.Start()
+
+	time.Sleep(time.Millisecond * 300)
+	os.Rename("testdata/t1/foo.txt", "testdata/t1/foo.txt.old")
+	ioutil.WriteFile("testdata/t1/foo.txt", []byte("HELLO"), 0644)
+	time.Sleep(time.Millisecond * 300)
+	ioutil.WriteFile("testdata/t1/foo.txt", []byte("HELLO"), 0644)
+	time.Sleep(time.Millisecond * 300)
+
+	fn.Stop()
+
+	if count != 3 {
+		t.Errorf("Should have benn triggered 3 times but was %v", count)
+	}
+}
+
+// nolint: errcheck
+func TestFileTriggerRunnerOnFile(t *testing.T) {
+	count := 0
+	os.MkdirAll("testdata/t1", 0755)
+	defer os.RemoveAll("testdata/t1")
+
+	ioutil.WriteFile("testdata/t1/foo.txt", []byte("HELLO"), 0644)
+
+	fn := NewFileTriggerRunner("testdata/t1/foo.txt", false, func() error {
+		count++
+		return nil
+	})
+
+	go fn.Start()
+
+	time.Sleep(time.Millisecond * 300)
+	ioutil.WriteFile("testdata/t1/foo.txt", []byte("HELLO"), 0644)
+	time.Sleep(time.Millisecond * 300)
+	ioutil.WriteFile("testdata/t1/foo.txt", []byte("HELLO"), 0644)
+	time.Sleep(time.Millisecond * 300)
+
+	fn.Stop()
+
+	if count != 3 {
+		t.Errorf("Should have benn triggered 3 times but was %v", count)
+	}
+}
+
+// nolint: errcheck
 func TestFileTriggerRunnerStop(t *testing.T) {
 	os.MkdirAll("testdata/t1/a", 0755)
 	defer os.RemoveAll("testdata/t1")
