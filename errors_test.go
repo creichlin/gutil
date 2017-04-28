@@ -97,8 +97,8 @@ func TestErrorCollector(t *testing.T) {
 		t.Errorf("last error should be LAST")
 	}
 
-	if ec.All().Error() != "FIRST\nLAST" {
-		t.Errorf("all errors should be FIRST\\nLAST")
+	if ec.Error() != "FIRST\nLAST" {
+		t.Errorf("errors should be FIRST\\nLAST")
 	}
 }
 
@@ -119,7 +119,7 @@ func TestEmptyCollector(t *testing.T) {
 		t.Errorf("last error should be nil")
 	}
 
-	if ec.All() != nil {
+	if ec.ThisOrNil() != nil {
 		t.Errorf("all errors should be nil")
 	}
 }

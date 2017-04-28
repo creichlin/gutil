@@ -17,7 +17,7 @@ func TestFileTriggerRunnerOnFileRename(t *testing.T) {
 
 	ioutil.WriteFile("testdata/t1/foo.txt", []byte("HELLO"), 0644)
 
-	fn := NewFileTriggerRunner("testdata/t1/foo.txt", false, func() error {
+	fn := NewFileTriggerRunner("testdata/t1/foo.txt", false, func(e, p string) error {
 		count++
 		return nil
 	})
@@ -46,7 +46,7 @@ func TestFileTriggerRunnerOnFile(t *testing.T) {
 
 	ioutil.WriteFile("testdata/t1/foo.txt", []byte("HELLO"), 0644)
 
-	fn := NewFileTriggerRunner("testdata/t1/foo.txt", false, func() error {
+	fn := NewFileTriggerRunner("testdata/t1/foo.txt", false, func(e, p string) error {
 		count++
 		return nil
 	})
@@ -71,7 +71,7 @@ func TestFileTriggerRunnerStop(t *testing.T) {
 	os.MkdirAll("testdata/t1/a", 0755)
 	defer os.RemoveAll("testdata/t1")
 
-	fn := NewFileTriggerRunner("testdata/t1/a", false, func() error {
+	fn := NewFileTriggerRunner("testdata/t1/a", false, func(e, p string) error {
 		return nil
 	})
 
@@ -91,7 +91,7 @@ func TestFileTriggerRunnerStopByError(t *testing.T) {
 	os.MkdirAll("testdata/t1/a", 0755)
 	defer os.RemoveAll("testdata/t1")
 
-	fn := NewFileTriggerRunner("testdata/t1/a", false, func() error {
+	fn := NewFileTriggerRunner("testdata/t1/a", false, func(e, p string) error {
 		return errors.New("expected error")
 	})
 
@@ -107,7 +107,7 @@ func TestFileTriggerRunner(t *testing.T) {
 	defer os.RemoveAll("testdata/t1")
 
 	countChannel := make(chan int, 10)
-	fn := NewFileTriggerRunner("testdata/t1", true, func() error {
+	fn := NewFileTriggerRunner("testdata/t1", true, func(e, p string) error {
 		fmt.Printf("Yeah\n")
 		countChannel <- 1
 		return nil
