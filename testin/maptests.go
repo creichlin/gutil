@@ -17,9 +17,8 @@ func RunMapTests(t *testing.T, folder string, process process) {
 	}
 
 	for _, file := range files {
-		RunMapTest(t, filepath.Join("testcases/aligner", file.Name()), process)
+		RunMapTest(t, filepath.Join(folder, file.Name()), process)
 	}
-
 }
 
 // RunMapTest will read the given file and split it's
@@ -47,18 +46,16 @@ func RunMapTest(t *testing.T, file string, process process) {
 	}
 
 	keys := []string{}
-
 	for key := range parts.results {
 		keys = append(keys, key)
 	}
-
 	sort.Strings(keys)
 
 	for _, key := range keys {
 		t.Run(file+"-"+key, func(t *testing.T) {
 			result := process(parts.main, key, t)
 			if result != parts.results[key] {
-				t.Errorf("Failed to generate expected result for %v:\n %v", key, parts.results[key])
+				t.Errorf("Failed to generate expected result for %v:\nexpected:\n%v\nactual:\n%v", key, parts.results[key], result)
 			}
 		})
 	}

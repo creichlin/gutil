@@ -87,17 +87,10 @@ func (ec *ErrorCollector) Last() error {
 	return nil
 }
 
-func (ec *ErrorCollector) All() error {
-	if ec.Has() {
-		return ec
-	}
-	return nil
-}
-
 // ThisOrNil returns the instance if there are errors
 // inside, otherwise nil. This is usefull to mimik the
 // default error handling where nil means no error
-func (ec *ErrorCollector) ThisOrNil() *ErrorCollector {
+func (ec *ErrorCollector) ThisOrNil() error {
 	if ec.Has() {
 		return ec
 	}
