@@ -4,24 +4,30 @@ import (
 	"log"
 )
 
-//// utils for making error handling easier
+// FatalIf is a Shortcut for pattern:
+// if err != nil {
+//   log.Fatalf("bla %v, %v", x, err)
+// }
+// gutil.FatalIf("bla %v, %v", x, err)
 
-/*
-Shortcut for pattern:
-if err != nil {
-  log.Fatalf("bla %v, %v", x, err)
-}
-gutil.FatalIf("bla %v, %v", x, err)
-
-if one of the parameters after the format string is of type error (implicitly not nil)
-log.Fatal will be called
-*/
-
+// if one of the parameters after the format string is of type error (implicitly not nil)
+// log.Fatal will be called
+// */
 func FatalIf(message string, values ...interface{}) {
 	for _, value := range values {
 		_, isErr := value.(error)
 		if isErr {
 			log.Fatalf(message, values...)
+			return
+		}
+	}
+}
+
+func LogIf(message string, values ...interface{}) {
+	for _, value := range values {
+		_, isErr := value.(error)
+		if isErr {
+			log.Printf(message, values...)
 			return
 		}
 	}
